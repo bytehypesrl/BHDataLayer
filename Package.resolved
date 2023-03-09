@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "alamofire",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Alamofire/Alamofire.git",
+      "state" : {
+        "revision" : "354dda32d89fc8cd4f5c46487f64957d355f53d8",
+        "version" : "5.6.1"
+      }
+    },
+    {
+      "identity" : "bhlogging",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/bytehypesrl/BHLogging.git",
+      "state" : {
+        "revision" : "8500beed7071a10d4201ddc21a5696ef17ff88ee",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "keychainaccess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kishikawakatsumi/KeychainAccess.git",
+      "state" : {
+        "revision" : "8d33ffd6f74b3bcfc99af759d4204c6395a3f918",
+        "version" : "3.2.1"
+      }
+    },
+    {
+      "identity" : "resolver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hmlongco/Resolver.git",
+      "state" : {
+        "revision" : "97de0b0320036607564af4a60025b48f8d041221",
+        "version" : "1.5.0"
+      }
+    }
+  ],
+  "version" : 2
+}
