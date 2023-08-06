@@ -17,6 +17,12 @@ public protocol RemoteDataSource {
         identifier: String,
         with parameters: [String: Encodable]
     ) -> AnyPublisher<Element, Error>
+
+    func post(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error>
+
+    func patch(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error>
+
+    func delete(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error>
 }
 
 extension RemoteDataSource {
@@ -27,5 +33,17 @@ extension RemoteDataSource {
 
     public func fetchById<Element: Codable & Equatable>(identifier: String) -> AnyPublisher<Element, Error> {
         fetchById(identifier: identifier, with: [:])
+    }
+
+    public func post(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        Fail(error: GeneralError.notImplemented).eraseToAnyPublisher()
+    }
+
+    public func patch(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        Fail(error: GeneralError.notImplemented).eraseToAnyPublisher()
+    }
+
+    public func delete(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        Fail(error: GeneralError.notImplemented).eraseToAnyPublisher()
     }
 }

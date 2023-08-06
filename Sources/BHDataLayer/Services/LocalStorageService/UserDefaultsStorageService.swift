@@ -8,7 +8,7 @@
 import Combine
 import Foundation
 
-public class RealLocalStorageService: LocalStorageService {
+public class UserDefaultsStorageService: LocalStorageService {
 
     // MARK: - Properties
 
@@ -25,24 +25,10 @@ public class RealLocalStorageService: LocalStorageService {
 
 // MARK: - LocalStorageService
 
-public extension RealLocalStorageService {
-
-    func save(data: Data, key: String, validity numberOfSeconds: Double = 0) {
-        userDefaults.set(data, forKey: key)
-
-        let validityInfo = getValidityInfo(for: numberOfSeconds)
-        let validityInfoKey = getValidityInfoKeyName(for: key)
-        userDefaults.set(validityInfo, forKey: validityInfoKey)
-    }
-
-    func get(key: String) -> Data? {
-        return userDefaults.object(forKey: key) as? Data
-    }
+public extension UserDefaultsStorageService {
 
     func get<T: Decodable>(_ type: T.Type, key: String) -> T? {
-        guard let data = self.get(key: key),
-              let decodedData = try? JSONDecoder().decode(type, from: data)
-        else {
+        guard let data = self.get(key: key), let decodedData = try? JSONDecoder().decode(type, from: data) else {
             return nil
         }
         return decodedData
@@ -54,10 +40,8 @@ public extension RealLocalStorageService {
     }
 
     func save<T: Encodable>(_ value: T, key: String, validity numberOfSeconds: Double = 0) {
-        guard let data = try? JSONEncoder().encode(value)
-        else {
-            return
-        }
+        guard let data = try? JSONEncoder().encode(value) else { return }
+
         save(data: data, key: key, validity: numberOfSeconds)
     }
 
@@ -73,12 +57,6 @@ public extension RealLocalStorageService {
         return currentDate.timeIntervalSince1970 <= validUntil
     }
 
-    func updateDataValidity(key: String, validity numberOfSeconds: Double) {
-        let validityInfo = getValidityInfo(for: numberOfSeconds)
-        let validityInfoKey = getValidityInfoKeyName(for: key)
-        userDefaults.set(validityInfo, forKey: validityInfoKey)
-    }
-
     func clearStorage() {
         userDefaults.dictionaryRepresentation().keys.forEach { userDefaults.removeObject(forKey: $0) }
         userDefaults.synchronize()
@@ -87,9 +65,21 @@ public extension RealLocalStorageService {
 
 // MARK: - Private
 
-private extension RealLocalStorageService {
+private extension UserDefaultsStorageService {
 
-    private func getValidityInfo(for numberOfSeconds: Double) -> Double {
+    func save(data: Data, key: String, validity numberOfSeconds: Double = 0) {
+        userDefaults.set(data, forKey: key)
+
+        let validityInfo = getValidityInfo(for: numberOfSeconds)
+        let validityInfoKey = getValidityInfoKeyName(for: key)
+        userDefaults.set(validityInfo, forKey: validityInfoKey)
+    }
+
+    func get(key: String) -> Data? {
+        return userDefaults.object(forKey: key) as? Data
+    }
+
+    func getValidityInfo(for numberOfSeconds: Double) -> Double {
         if numberOfSeconds == infinityValidity {
             return infinityValidity
         }
@@ -97,7 +87,7 @@ private extension RealLocalStorageService {
         return currentDate.addingTimeInterval(TimeInterval(numberOfSeconds)).timeIntervalSince1970
     }
 
-    private func getValidityInfoKeyName(for dataKey: String) -> String {
+    func getValidityInfoKeyName(for dataKey: String) -> String {
         dataKey + validUntilKeySuffix
     }
 }
