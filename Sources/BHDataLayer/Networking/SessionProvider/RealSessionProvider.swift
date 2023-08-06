@@ -23,10 +23,13 @@ class RealSessionProvider: SessionProvider {
 
     static var serializationQueueName = "com.iosNetworking.alamofire.session.serialization"
 
+    private let timeoutInterval = 30.0
+
     private lazy var sessionWithAuthentication: Session = {
         let sessionConfiguration = URLSessionConfiguration.af.default
         sessionConfiguration.httpAdditionalHeaders = ["Accept-Language" : ""]
         sessionConfiguration.allowsExpensiveNetworkAccess = true
+        sessionConfiguration.timeoutIntervalForRequest = timeoutInterval
 
         let credential = OAuthCredential(accessToken: tokenHandler.accessToken, refreshToken: tokenHandler.refreshToken)
 
@@ -76,7 +79,7 @@ class RealSessionProvider: SessionProvider {
         let sessionConfiguration = URLSessionConfiguration.af.default
         sessionConfiguration.headers.remove(name: "Accept-Language")
         sessionConfiguration.allowsExpensiveNetworkAccess = true
-        sessionConfiguration.timeoutIntervalForRequest = 60
+        sessionConfiguration.timeoutIntervalForRequest = timeoutInterval
         return sessionConfiguration
     }
 

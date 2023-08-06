@@ -32,6 +32,26 @@ public protocol BaseRepository {
     func streamForce<Element: Codable & Equatable & Saveable>(
         with parameters: [String: Encodable]
     ) -> AnyPublisher<Element, Error>
+
+    func getLocally<Element: Codable & Equatable & Saveable>(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Element, Error>
+
+    func fetch<Element: Codable & Equatable>(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Element, Error>
+
+    func post(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Any, Error>
+
+    func patch(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Any, Error>
+
+    func delete(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Any, Error>
 }
 
 // MARK: - Properties
@@ -43,7 +63,7 @@ public extension BaseRepository {
     var kGetByIdIdentifier: String { "kIdentifier" }
 }
 
-// MARK: - Methods
+// MARK: - Get Methods
 
 extension BaseRepository {
 
@@ -116,6 +136,48 @@ extension BaseRepository {
         )
         .removeDuplicates()
         .eraseToAnyPublisher()
+    }
+
+    // GetLocally strategy
+    ///
+    /// Get the data from the local data source
+    ///
+
+    public func getLocally<Element>(
+        with parameters: [String: Encodable] = [:]
+    ) -> AnyPublisher<Element, Error> where Element: Codable & Equatable & Saveable {
+        return localDataSource.get()
+    }
+
+    // Fetch strategy
+    ///
+    /// Fetch the data from the remote data source
+    ///
+
+    public func fetch<Element>(
+        with parameters: [String: Encodable]
+    ) -> AnyPublisher<Element, Error> where Element: Codable & Equatable {
+        if let identifier = parameters[kGetByIdIdentifier] as? String {
+            return remoteDataSource.fetchById(identifier: identifier, with: parameters)
+        }
+        return remoteDataSource.fetch(with: parameters)
+    }
+}
+
+// MARK: - Standard Methods
+
+extension BaseRepository {
+
+    public func post(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        remoteDataSource.post(with: parameters)
+    }
+
+    public func patch(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        remoteDataSource.patch(with: parameters)
+    }
+
+    public func delete(with parameters: [String: Encodable]) -> AnyPublisher<Any, Error> {
+        remoteDataSource.delete(with: parameters)
     }
 }
 

@@ -70,25 +70,35 @@ extension RealRequestExecutor: RequestExecutor {
             }
             return Just(value).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        .handleEvents(
-            receiveCompletion: { [weak self] completion in
-                switch completion {
-                case .failure(let error): self?.errorHandler.handleError(error: error)
-                default: break
-                }
-            }
-        )
-        .fireNotEarlierThan(delay: .seconds(fireNotEarlierThan), on: RunLoop.main)
-        .receive(on: DispatchQueue.main)
+        .fireNotEarlierThan(delay: .seconds(fireNotEarlierThan), on: DispatchQueue.global(qos: .userInitiated))
+        .receive(on: DispatchQueue.global(qos: .userInitiated))
         .eraseToAnyPublisher()
     }
 
-    public func requestMock<Value>(_ endpoint: ApiEndpoint,
-                                   delay: Double = 1.0, response: Value) -> AnyPublisher<Value, Error> where Value : Decodable {
-        Future { promise in
-            promise(.success(response))
+    public func requestNoParsing(_ endpoint: ApiEndpoint, errorMapper: ErrorMapper?) -> AnyPublisher<Void, Error> {
+        setSession(endpoint.isAuthtenticationTokenRequired)
+        return session.request(
+            endpoint.baseUrl + endpoint.path,
+                               method: endpoint.method,
+                               parameters: endpoint.parameters,
+                               encoding:  endpoint.encoding,
+                               headers: endpoint.headers
+        )
+        .validate()
+        .publishUnserialized()
+        .flatMap { response -> AnyPublisher<Void, Error> in
+            if let error = response.error {
+                if AFError.isAuthorizationError(error) {
+                    return Fail<Void, Error>(error: GeneralError.authorizationError).eraseToAnyPublisher()
+                }
+                let errorMapper = errorMapper ?? self.errorMapper
+                let mappedError = errorMapper.map(responseError: error, responseData: response.data)
+                return Fail<Void, Error>(error: mappedError).eraseToAnyPublisher()
+            }
+            return Just(Void()).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        .delay(for: .seconds(delay), scheduler: RunLoop.current)
+        .fireNotEarlierThan(delay: .seconds(fireNotEarlierThan), on: DispatchQueue.global(qos: .userInitiated))
+        .receive(on: DispatchQueue.global(qos: .userInitiated))
         .eraseToAnyPublisher()
     }
 
@@ -118,7 +128,7 @@ extension RealRequestExecutor: RequestExecutor {
             }
             return Just(value).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        .receive(on: DispatchQueue.main)
+        .receive(on: DispatchQueue.global(qos: .userInitiated))
         .eraseToAnyPublisher()
     }
 
@@ -147,7 +157,7 @@ extension RealRequestExecutor: RequestExecutor {
             }
             return Just(value).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        .receive(on: DispatchQueue.main)
+        .receive(on: DispatchQueue.global(qos: .userInitiated))
         .eraseToAnyPublisher()
     }
 }

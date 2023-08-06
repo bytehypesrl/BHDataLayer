@@ -13,7 +13,7 @@ public protocol RequestExecutor {
 
     func request<Value>(_ endpoint: ApiEndpoint, errorMapper: ErrorMapper?) -> AnyPublisher<Value, Error> where Value: Decodable
 
-    func requestMock<Value>(_ endpoint: ApiEndpoint, delay: Double, response: Value) -> AnyPublisher<Value, Error> where Value: Decodable
+    func requestNoParsing(_ endpoint: ApiEndpoint, errorMapper: ErrorMapper?) -> AnyPublisher<Void, Error>
 
     func uploadCall<Value>(endpoint: ApiEndpoint, fileURL: URL, withName: String) -> AnyPublisher<Value, Error> where Value: Decodable
 
@@ -21,7 +21,12 @@ public protocol RequestExecutor {
 }
 
 public extension RequestExecutor {
+
     func request<Value>(endpoint: ApiEndpoint) -> AnyPublisher<Value, Error> where Value: Decodable {
         request(endpoint, errorMapper: nil)
+    }
+
+    func requestNoParsing(endpoint: ApiEndpoint) -> AnyPublisher<Void, Error> {
+        requestNoParsing(endpoint, errorMapper: nil)
     }
 }
